@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, People
 #from models import Person
 
 app = Flask(__name__)
@@ -21,14 +21,19 @@ CORS(app)
 setup_admin(app)
 
 # Handle/serialize errors like a JSON object
+
+
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # generate sitemap with all your endpoints
+
+
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+
 
 @app.route('/user', methods=['GET'])
 def handle_hello():
@@ -38,6 +43,20 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+
+@app.route('/people', methods=['GET'])
+def getPeople():
+    all_people = People.query.all()
+    arreglo_people = list(map(lambda x: x.serialize(), all_people))
+    return jsonify({"Resultado": arreglo_people})
+
+
+@app.route('/people/<int:people_id>', methods=['GET'])
+def getPeopleID(people_id):
+    one_people = People.query.get(people_id)
+    return jsonify({"personaje": one_people.serialize()})
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
