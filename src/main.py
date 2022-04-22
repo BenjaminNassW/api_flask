@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People
+from models import db, User, People, Planet, Fav_people
 #from models import Person
 
 app = Flask(__name__)
@@ -36,13 +36,10 @@ def sitemap():
 
 
 @app.route('/user', methods=['GET'])
-def handle_hello():
-
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body), 200
+def getUser():
+    all_user = User.query.all()
+    arreglo_user = list(map(lambda x: x.serialize(), all_user))
+    return jsonify({"Resultado": arreglo_user})
 
 
 @app.route('/people', methods=['GET'])
@@ -56,6 +53,48 @@ def getPeople():
 def getPeopleID(people_id):
     one_people = People.query.get(people_id)
     return jsonify({"personaje": one_people.serialize()})
+
+
+@app.route('/planet', methods=['GET'])
+def getPlanet():
+    all_planet = Planet.query.all()
+    arreglo_planet = list(map(lambda x: x.serialize(), all_planet))
+    return jsonify({"Resultado": arreglo_planet})
+
+
+@app.route('/planet/<int:planet_id>', methods=['GET'])
+def getPlanetID(planet_id):
+    one_planet = Planet.query.get(planet_id)
+    return jsonify({"planeta": one_planet.serialize()})
+
+
+@app.route('/favPeople', methods=['GET'])
+def getFavPoeple():
+    all_favPeople = Fav_people.query.all()
+    arreglo_favPeople = list(map(lambda x: x.serialize(), all_favPeople))
+    return jsonify({"Resultado": arreglo_favPeople})
+
+
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+def addFavPeople(people_id):
+    user = request.get_json()
+    newFav = Fav_people()
+    newFav.id_user = user['id']
+    newFav.uid_people = people_id
+
+    db.session.add(newFav)
+    db.session.commit()
+    return("todo salio bien :D")
+
+
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+def deleteFavPeople(people_id):
+    user = request.get_json()
+    allFavs = Fav_people.query.filter_by(
+        id_user=user['id'], uid_people=people_id).all()
+    for i in allFavs:
+        db.session.delete(i)
+    db.session.commit()
 
 
 # this only runs if `$ python src/main.py` is executed
