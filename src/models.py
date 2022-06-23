@@ -64,3 +64,17 @@ class Fav_people(db.Model):
             "id_user": self.id_user,
             "id": self.id,
         }
+
+class Fav_planet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    uid_planet = db.Column(db.Integer, db.ForeignKey('planet.uid'))
+    id_user = db.Column(db.Integer, db.ForeignKey('user.id'))
+    planet = db.relationship('Planet')
+    user = db.relationship('User')
+
+    def serialize(self):
+        return {
+            "uid_planet": self.uid_planet,
+            "id_user": self.id_user,
+            "id": self.id,
+        }

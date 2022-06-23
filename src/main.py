@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Planet, Fav_people
+from models import db, User, People, Planet, Fav_people, Fav_planet
 #from models import Person
 
 app = Flask(__name__)
@@ -74,6 +74,11 @@ def getFavPoeple():
     arreglo_favPeople = list(map(lambda x: x.serialize(), all_favPeople))
     return jsonify({"Resultado": arreglo_favPeople})
 
+@app.route('/favPlanet', methods=['GET'])
+def getFavPlanet():
+    all_favPlanet = Fav_planet.query.all()
+    arreglo_favPlanet = list(map(lambda x: x.serialize(), all_favPlanet))
+    return jsonify({"Resultado": arreglo_favPlanet})
 
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
 def addFavPeople(people_id):
@@ -95,7 +100,29 @@ def deleteFavPeople(people_id):
     for i in allFavs:
         db.session.delete(i)
     db.session.commit()
+    return("se elimino todo")
 
+@app.route('/favorite/planet/<int:planet_uid>', methods=['POST'])
+def addFavPlanet(planet_uid):
+    user = request.get_json()
+    newFav = Fav_planet()
+    newFav.id_user = user['id']
+    newFav.uid_planet = planet_uid
+
+    db.session.add(newFav)
+    db.session.commit()
+    return("todo salio bien :D")
+
+
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def deleteFavPlanet(planet_id):
+    user = request.get_json()
+    allFavs = Fav_planet.query.filter_by(
+        id_user=user['id'], uid_planet=planet_id).all()
+    for i in allFavs:
+        db.session.delete(i)
+    db.session.commit()
+    return("se elimino todo")
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
